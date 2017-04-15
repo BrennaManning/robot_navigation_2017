@@ -9,7 +9,7 @@ from nav_msgs.srv import GetMap
 
 class MapReadingNode(object):
     """ A node to read from the map"""
-    print("hi")
+    print("hello world")
 
     def __init__(self):
         """ Intitialize map reading node. """
@@ -25,7 +25,7 @@ class MapReadingNode(object):
             else:
                 print "no map :("
             self.grid_map = OccupancyGrid(map)
-            print self.grid_map.occupancy_grid
+            
         except rospy.ServiceException, e:
             print "Service call failed: %s"%e
             
