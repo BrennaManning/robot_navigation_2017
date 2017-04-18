@@ -23,8 +23,8 @@ class search_algorithm(object):
 		self.current_node.prev_node = start_node
 
 
-		self.get_manhattan(self.current_node)
-
+		# self.get_manhattan(self.current_node)
+		self.total_cost(self.current_node)
 
 		self.todo = []	# nodes to search
 		self.dead = {}	# nodes we've searched
@@ -51,7 +51,7 @@ class search_algorithm(object):
 		distx = abs(self.destination.x - node.x)
 		disty = abs(self.destination.y - node.y)
 		node.h = distx +disty
-		print("manhattan = ", node.h)
+		# print("manhattan = ", node.h)
 		return node
 
 	def append_g_cost(self, node):
@@ -70,48 +70,56 @@ class search_algorithm(object):
 
 	def get_neighbors(self):
 		print("Getting neighbors")
-		if (self.current_node.x-1, self.current_node.y) not in dead:
+		curr_neighbor_nodes = []
+		if (self.current_node.x-1, self.current_node.y) not in self.dead:
 			left_node = graph_node(self.current_node.x-1, self.current_node.y)
-			left_node.prev_node = current_node
+			left_node.prev_node = self.current_node
+			# print('addding left node', left_node.prev_node)
 			curr_neighbor_nodes.append(left_node)
 		else:
-			if dead[(self.current_node.x-1, self.current_node.y)].prev_node.g > current_node.g:
-				dead[(self.current_node.x-1, self.current_node.y)].prev_node = current_node
+			if self.dead[(self.current_node.x-1, self.current_node.y)].prev_node.g > self.current_node.g:
+				self.dead[(self.current_node.x-1, self.current_node.y)].prev_node = self.current_node
 
-		if (self.current_node.x+1, self.current_node.y) not in dead:
+		if (self.current_node.x+1, self.current_node.y) not in self.dead:
 			right_node = graph_node(self.current_node.x+1, self.current_node.y)
-			right_node.prev_node = current_node
+			right_node.prev_node = self.current_node
+			# print('addding right node', right_node.prev_node)
+
 			curr_neighbor_nodes.append(right_node)
 		else:
-			if dead[(self.current_node.x+1, self.current_node.y)].prev_node.g > current_node.g:
-				dead[(self.current_node.x+1, self.current_node.y)].prev_node = current_node
+			if self.dead[(self.current_node.x+1, self.current_node.y)].prev_node.g > self.current_node.g:
+				self.dead[(self.current_node.x+1, self.current_node.y)].prev_node = self.current_node
 
-		if (self.current_node.x, self.current_node.y-1) not in dead:
+		if (self.current_node.x, self.current_node.y-1) not in self.dead:
 			up_node = graph_node(self.current_node.x, self.current_node.y-1)
+			up_node.prev_node = self.current_node
+			# print('addding up node', up_node.prev_node)			
 			curr_neighbor_nodes.append(up_node)
 		else:
-			if dead[(self.current_node.x, self.current_node.y-1)].prev_node.g > current_node.g:
-				dead[(self.current_node.x, self.current_node.y-1)].prev_node = current_node
+			if self.dead[(self.current_node.x, self.current_node.y-1)].prev_node.g > self.current_node.g:
+				self.dead[(self.current_node.x, self.current_node.y-1)].prev_node = self.current_node
 
 
-		if (self.current_node.x, self.current_node.y+1) not in dead:
+		if (self.current_node.x, self.current_node.y+1) not in self.dead:
 			down_node = graph_node(self.current_node.x, self.current_node.y+1)
-			down_node.prev_node = current_node
+			down_node.prev_node = self.current_node
 			curr_neighbor_nodes.append(down_node)
 		else:
-			if dead[(self.current_node.x, self.current_node.y+1)].prev_node.g > current_node.g:
-				dead[(self.current_node.x, self.current_node.y+1)].prev_node = current_node
+			if self.dead[(self.current_node.x, self.current_node.y+1)].prev_node.g > self.current_node.g:
+				self.dead[(self.current_node.x, self.current_node.y+1)].prev_node = self.current_node
 
 		
-		for neighbor in curr_neighbor_nodes:
-			
+		for node in curr_neighbor_nodes: # for each neighbor
+			print('prev_node.g', node.prev_node)
 			if node.prev_node.g + 1 < node.g:
 				self.came_from[(node.x, node.y)] = node.prev_node
-			neighbor.prev_node = self.current_node
+			node.prev_node = self.current_node
 
-		curr_neighbor_nodes = [self.total_cost(node) for node in curr_neighbor_nodes]
+		print('curr_neighbor_nodes:', curr_neighbor_nodes)
+
+		for node in curr_neighbor_nodes:
+			self.total_cost(node)
 		
-
 		self.current_node.neighbors = curr_neighbor_nodes
 
 
@@ -121,16 +129,17 @@ class search_algorithm(object):
 		print("finding path")
 		# Get neighbors of curr node
 		self.get_neighbors()
-
+		print('current neighbors', self.current_node.neighbors)
 		# Append each neighbor
 		for neighbor in self.current_node.neighbors:
+			print('neighbor', neighbor.x)
 			self.todo.append(neighbor)	
 
-		# Sort todo: smallest total cost fist!
+		# Sort todo: smallest total cost fist! 
 		self.todo.sort(key=lambda x: x.cost, reverse=True)
 		print("TODO ", self.todo)
-		self.dead[(current_node.x, current_node.y)]= current_node
-		print ("DEAD " ,self.dead)
+		self.dead[(self.current_node.x, self.current_node.y)]= self.current_node
+		print ("self.DEAD " ,self.dead)
 		self.current_node = self.todo.pop(0)
 
 
@@ -155,3 +164,7 @@ SA.find_path()
 print("TODO ", SA.todo)
 
 print("CAME FROM DICT ", SA.came_from)
+
+# to do
+# iterate through everything
+# pathfind
