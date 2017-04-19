@@ -4,10 +4,17 @@
 from map_reading import MapReadingNode
 import rospy
 import sys
-
+import matplotlib.pyplot as plt
+import numpy as np
+import copy
 
 map_reading = MapReadingNode()	
 node_values = map_reading.grid_map.occupancy_grid
+viz_grid = copy.deepcopy(node_values)
+viz_grid[viz_grid > 10] = 4
+viz_grid[viz_grid == 0] = 1
+viz_grid[viz_grid < 0] = 0
+
 print("completed reading map")
 
 class search_algorithm(object):
@@ -16,6 +23,9 @@ class search_algorithm(object):
 		self.initialize = False
 		rospy.init_node('a_star')
 		
+		viz_grid[start[0], start[1]] = 3
+		viz_grid[destination[0], destination[1]] = 3
+
 		self.destination = graph_node(destination[0], destination[1])
 		start_node = graph_node(start[0], start[1])
 		start_node.g = 0
@@ -40,6 +50,8 @@ class search_algorithm(object):
 		#for i in range(1, node_values.shape[0]-1):
 		#	for j in range(1, node_values.shape[1]-1):
 	#			self.all_nodes.append(graph_node(i,j))
+
+		
 		
 		self.initialize = True
 		print("initialized? ", self.initialize)
@@ -47,7 +59,6 @@ class search_algorithm(object):
 
 	def get_manhattan(self, node):
 		""" finds manhattan distance"""
-		print("getting manhattan")
 		distx = abs(self.destination.x - node.x)
 		disty = abs(self.destination.y - node.y)
 		node.h = distx +disty
@@ -56,12 +67,10 @@ class search_algorithm(object):
 
 	def append_g_cost(self, node):
 		""" Appends g cost, or in our case how many steps to reach node"""
-		print("appending g cost")
 		node.g = node.prev_node.g + 1
 
 	def total_cost(self, node):
 		""" Sum of manhattan distance and g cost. To be used for todo ranking. """ 
-		print("total cost")
 		self.get_manhattan(node)
 		self.append_g_cost(node)
 		node.cost = node.h + node.g
@@ -69,7 +78,6 @@ class search_algorithm(object):
 
 
 	def get_neighbors(self):
-		print("Getting neighbors")
 		curr_neighbor_nodes = []
 		if (self.current_node.x-1, self.current_node.y) not in self.dead:
 			left_node = graph_node(self.current_node.x-1, self.current_node.y)
@@ -110,12 +118,9 @@ class search_algorithm(object):
 
 		
 		for node in curr_neighbor_nodes: # for each neighbor
-			print('prev_node.g', node.prev_node)
 			if node.prev_node.g + 1 < node.g:
 				self.came_from[(node.x, node.y)] = node.prev_node
 			node.prev_node = self.current_node
-
-		print('curr_neighbor_nodes:', curr_neighbor_nodes)
 
 		for node in curr_neighbor_nodes:
 			self.total_cost(node)
@@ -123,32 +128,41 @@ class search_algorithm(object):
 		self.current_node.neighbors = curr_neighbor_nodes
 
 
+	def visualize(self):
+		print("updating viz")
+		img = plt.imshow(viz_grid)
+		plt.colorbar(img)
+		plt.imshow(img)
+		plt.close()
+		print("past plt.show")
 
 
 	def find_path(self):
 		print("finding path")
 
-		# update curr_
-		#for i in range(1, node_values.shape[0]-1):
-		#	for j in range(1, node_values.shape[1]-1):
-	#			self.all_nodes.append(graph_node(i,j))
+		while self.current_node.x != self.destination.x or self.current_node.y != self.destination.y:	
 		
+			print("loop")
+			# Get neighbors of curr node
+			self.get_neighbors()
+			# Append each neighbor
+			for neighbor in self.current_node.neighbors:
+				self.todo.append(neighbor)	
 
-		# Get neighbors of curr node
-		self.get_neighbors()
-		print('current neighbors', self.current_node.neighbors)
-		# Append each neighbor
-		for neighbor in self.current_node.neighbors:
-			print('neighbor', neighbor.x)
-			self.todo.append(neighbor)	
+			# Sort todo: smallest total cost fist! 
+			self.todo.sort(key=lambda x: x.cost, reverse=False)
+			#print("TODO ", self.todo)
+			self.dead[(self.current_node.x, self.current_node.y)]= self.current_node
+			#print ("self.DEAD " ,self.dead)
 
-		# Sort todo: smallest total cost fist! 
-		self.todo.sort(key=lambda x: x.cost, reverse=True)
-		print("TODO ", self.todo)
-		self.dead[(self.current_node.x, self.current_node.y)]= self.current_node
-		print ("self.DEAD " ,self.dead)
-		self.current_node = self.todo.pop(0)
+			# Update self.current_node
+			self.current_node = self.todo.pop(0)
+			viz_grid[self.current_node.x, self.current_node.y] = 2
+			#self.visualize()
+			print("done visualizing")
 
+		print("destination reached")
+		print("YAYYYY")
 
 	
 class graph_node(object):
@@ -162,14 +176,14 @@ class graph_node(object):
 		self.value = node_values[x,y]
 		self.prev_node = None
 		self.neighbors = []
-		print("INITIALIZED NODE ", self.x, self.y, " /WITH VALUE ", self.value)
+		#print("INITIALIZED NODE ", self.x, self.y, " /WITH VALUE ", self.value)
 
 	def __repr__(self):
 		return "node at %d,%d" % (self.x, self.y)
 
 
 		
-SA = search_algorithm((300,300),(1,1))
+SA = search_algorithm((300,1300),(305,1300))
 SA.find_path()
 print("TODO ", SA.todo)
 
