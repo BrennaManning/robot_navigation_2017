@@ -127,6 +127,13 @@ class search_algorithm(object):
 
 	def find_path(self):
 		print("finding path")
+
+		# update curr_
+		#for i in range(1, node_values.shape[0]-1):
+		#	for j in range(1, node_values.shape[1]-1):
+	#			self.all_nodes.append(graph_node(i,j))
+		
+
 		# Get neighbors of curr node
 		self.get_neighbors()
 		print('current neighbors', self.current_node.neighbors)
