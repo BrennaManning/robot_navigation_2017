@@ -157,6 +157,9 @@ class graph_node(object):
 		self.neighbors = []
 		print("INITIALIZED NODE ", self.x, self.y, " /WITH VALUE ", self.value)
 
+	def __repr__(self):
+		return "node at %d,%d" % (self.x, self.y)
+
 
 		
 SA = search_algorithm((300,300),(1,1))
