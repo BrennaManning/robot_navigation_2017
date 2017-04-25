@@ -68,7 +68,7 @@
 									<ul class="feature-icons">
 										<li class="fa-edit"><a href=#proposal>Project Proposal</a></li>
 										<li class="fa-book"><a href=#story1>Project Story I</a></li>
-										<li class="fa-book">Project Story II</li>
+										<li class="fa-book"><a href=#story2>Project Story II</a></li>
 										<li class="fa-file-powerpoint-o"><a href="https://drive.google.com/file/d/0B9cafrpiE3oaSW14ZE0zZlY3SVk/view?usp=sharing"> Midpoint Design Review Slides</a></li>
 										<li class="fa-edit">Final Writeup</li><li class="fa-code">Source Code</li>
 									</ul>
@@ -119,6 +119,22 @@
 								<p>That was all in the initial setup. For the actual pathfinding, we first find the neighbors of the current node, turn them into node objects, and add them to a “to do” list. Then we sort the to do list by their total cost, and then search in order of lowest cost to highest cost. That’s where we got to by the time of this post, but we feel very close to finishing the search algorithm and figuring out a good path. </p>
 								<p>We spent a lot of time achieving a strong comprehensive understanding of the ROS Occupancy Grid and the nuances of the A* algorithm, as we hadn’t explored it in quite some time. We believe it was valuable for us to make this investment early on, and it will help us significantly in the near future.
 								</p>
+								<p>We have made progress towards producing effective visuals of nodes being searched and the path as it is being calculated. To do this, we explored matplotlib functions, and how to update graphs in real time in order to show what our algorithm has searched so far.
+	
+</p>
+								<p>We unfortunately were not able to dedicate the same number of project-hours the last week as we were the first few weeks and will for the last sprint of the project, but we still made good progress and think we are in a good place moving forward.</p>
+								<p>Our next step for this final leg of the project is to translate this path into Twist commands, which will be sent to the Neato to make it follow the calculated path to the destination in real life. We have clear goals for the remaining time of this project and are excited to move forward. Our work so far has given us a much deeper understanding of how these path planning algorithms actually work, and we’re excited to now explore and learn about how to control a robot well from a planned path. 
+								</p>
+								<p> 
+We also had an opportunity this past week to present our work so far to the other members of our class. We received some great feedback that is being incorporated into our work. (Downsampling the map, for example.) This presentation was also great practice for explaining our work, telling our story, and creating documentation/project artifacts. 
+								</p>
+							</div>
+						</section>
+						<section id="story2">
+							<div class = "container">
+								<h3>Project Story II</h3>
+								<h5>April 25, 2017</h5>
+								<p>At this point we have completed our implementation of the A* algorithm. We are able to reach the destination node from a given start node following the optimal path, and this path is calculated quickly and efficiently.</p>
 							</div>
 						</section>
 
