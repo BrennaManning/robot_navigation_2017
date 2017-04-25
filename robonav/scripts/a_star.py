@@ -33,7 +33,8 @@ class search_algorithm(object):
 		start_node.g = 0
 		self.current_node = start_node
 		self.current_node.prev_node = start_node
-
+		self.start_node = start_node
+		print(self.start_node)
 
 		# self.get_manhattan(self.current_node)
 		self.total_cost(self.current_node)
@@ -44,6 +45,7 @@ class search_algorithm(object):
 		self.all_nodes = []
 
 		self.came_from = {}
+		self.final = []
 
 		# making the nodes
 		map_reading = MapReadingNode()	
@@ -161,6 +163,13 @@ class search_algorithm(object):
 		plt.pause(.01)
 		plt.show(close)
 
+	def backtrack(self):
+		while (self.current_node.x, self.current_node.y) != (self.start_node.x, self.start_node.y):
+			print('in backtrack loop')
+			self.final.append(self.current_node.prev_node)
+			self.current_node = self.current_node.prev_node
+			# print('backtracking',self.current_node)
+		# return final
 
 	def find_path(self):
 		print("finding path")
@@ -172,6 +181,9 @@ class search_algorithm(object):
 		viz_counter = 0
 
 		while self.current_node.x != self.destination.x or self.current_node.y != self.destination.y:	
+
+			print(self.current_node)
+			# print("loop")
 
 			# Get neighbors of curr node
 			self.get_neighbors()
@@ -193,12 +205,18 @@ class search_algorithm(object):
 			# Update self.current_node
 
 			self.current_node = self.todo.pop(0)
+
 			print self.current_node.x, self.current_node.y
 			viz_grid[self.current_node.y, self.current_node.x] = 10
 			viz_counter += 1
 			if viz_counter % 2000 == 0:
 				self.visualize(viz_grid)
 		self.destination_reached = True
+
+		print('backtracking')
+		self.backtrack()
+		print('final path', self.final)
+		self.visualize(viz_grid, True)
 		print("destination reached")
 		print("YAYYYY")
 
@@ -224,9 +242,9 @@ class graph_node(object):
 		
 SA = search_algorithm((40,130),(60,125))
 SA.find_path()
-print("TODO ", SA.todo)
+# print("TODO ", SA.todo)
 
-print("CAME FROM DICT ", SA.came_from)
+# print("CAME FROM DICT ", SA.came_from)
 
 # to do
 # iterate through everything
