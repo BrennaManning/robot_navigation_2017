@@ -7,6 +7,7 @@ import sys
 import matplotlib.pyplot as plt
 import numpy as np
 import copy
+import random
 
 map_reading = MapReadingNode()	
 node_values = map_reading.grid_map.occupancy_grid
@@ -19,6 +20,7 @@ print("completed reading map")
 
 class search_algorithm(object):
 	def __init__(self, destination, start):
+		global viz_grid
 		print("hello a_star")
 		self.initialize = False
 		rospy.init_node('a_star')
@@ -50,9 +52,10 @@ class search_algorithm(object):
 		#for i in range(1, node_values.shape[0]-1):
 		#	for j in range(1, node_values.shape[1]-1):
 	#			self.all_nodes.append(graph_node(i,j))
-
+		self.frame_count = 0
+		self.f = plt.figure()
 		
-		
+		self.destination_reached = False
 		self.initialize = True
 		print("initialized? ", self.initialize)
 
@@ -119,7 +122,7 @@ class search_algorithm(object):
 		
 		for node in curr_neighbor_nodes: # for each neighbor
 			if node.prev_node.g + 1 < node.g:
-				self.came_from[(node.x, node.y)] = node.prev_node
+				self.came_from[node.x, node.y] = node.prev_node
 			node.prev_node = self.current_node
 
 		for node in curr_neighbor_nodes:
@@ -128,24 +131,45 @@ class search_algorithm(object):
 		self.current_node.neighbors = curr_neighbor_nodes
 
 
-	def visualize(self):
+	def visualize(self, viz_grid):
 		print("updating viz")
-		img = plt.imshow(viz_grid)
-		plt.colorbar(img)
-		plt.imshow(img)
-		plt.close()
-		print("past plt.show")
+
+		for key in self.came_from:
+				print "key", key
+				viz_grid[key[1], key[0]] = 10
+		self.frame_count += 1
+		print(self.frame_count)
+		print viz_grid[300,1300]
+		A = np.random.random((100,100))
+		plt.clf()
+		#plt.pcolor(viz_grid)
+		plt.imshow(viz_grid, interpolation='nearest')
+		plt.title(str(rospy.Time.now()))
+		plt.colorbar()
+
+		#plt.pcolor(A)
+		plt.draw()
+		plt.pause(.01)
+		plt.show(False)
+		if self.destination_reached:
+			plt.close()
 
 
 	def find_path(self):
 		print("finding path")
 
+
+		global viz_grid
+
+
+		viz_counter = 0
+
 		while self.current_node.x != self.destination.x or self.current_node.y != self.destination.y:	
-		
-			print("loop")
+
 			# Get neighbors of curr node
 			self.get_neighbors()
 			# Append each neighbor
+
 			for neighbor in self.current_node.neighbors:
 				self.todo.append(neighbor)	
 
@@ -157,10 +181,15 @@ class search_algorithm(object):
 
 			# Update self.current_node
 			self.current_node = self.todo.pop(0)
-			viz_grid[self.current_node.x, self.current_node.y] = 2
-			#self.visualize()
-			print("done visualizing")
-
+			#print self.current_node.x, self.current_node.y
+			viz_grid[self.current_node.y, self.current_node.y] = 10
+			viz_grid[300,1300]= 10
+			viz_counter +=1
+			if viz_counter % 100 == 0:
+				print viz_counter
+			if viz_counter % 10000 == 0:
+				self.visualize(viz_grid)
+		self.destination_reached = True
 		print("destination reached")
 		print("YAYYYY")
 
@@ -183,7 +212,7 @@ class graph_node(object):
 
 
 		
-SA = search_algorithm((300,1300),(305,1300))
+SA = search_algorithm((300,1300),(850,1100))
 SA.find_path()
 print("TODO ", SA.todo)
 
