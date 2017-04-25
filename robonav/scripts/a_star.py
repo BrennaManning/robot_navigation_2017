@@ -25,8 +25,8 @@ class search_algorithm(object):
 		self.initialize = False
 		rospy.init_node('a_star')
 		
-		viz_grid[start[0], start[1]] = 3
-		viz_grid[destination[0], destination[1]] = 3
+		viz_grid[start[1], start[0]] = 3
+		viz_grid[destination[1], destination[0]] = 3
 
 		self.destination = graph_node(destination[0], destination[1])
 		start_node = graph_node(start[0], start[1])
@@ -59,6 +59,10 @@ class search_algorithm(object):
 		self.initialize = True
 		print("initialized? ", self.initialize)
 
+		if self.current_node.value != -1:
+			print "BAD START POINT"
+		if self.destination.value != -1:
+			print "BAD DESTINATION POINT"
 
 	def get_manhattan(self, node):
 		""" finds manhattan distance"""
@@ -82,12 +86,15 @@ class search_algorithm(object):
 
 	def get_neighbors(self):
 		curr_neighbor_nodes = []
+		x = self.current_node.x
+		y = self.current_node.y
 		if (self.current_node.x-1, self.current_node.y) not in self.dead:
 			left_node = graph_node(self.current_node.x-1, self.current_node.y)
 			left_node.prev_node = self.current_node
 			# print('addding left node', left_node.prev_node)
 			curr_neighbor_nodes.append(left_node)
 		else:
+			print "neighbor already visited"
 			if self.dead[(self.current_node.x-1, self.current_node.y)].prev_node.g > self.current_node.g:
 				self.dead[(self.current_node.x-1, self.current_node.y)].prev_node = self.current_node
 
@@ -98,6 +105,7 @@ class search_algorithm(object):
 
 			curr_neighbor_nodes.append(right_node)
 		else:
+			print "neighbor already visited"
 			if self.dead[(self.current_node.x+1, self.current_node.y)].prev_node.g > self.current_node.g:
 				self.dead[(self.current_node.x+1, self.current_node.y)].prev_node = self.current_node
 
@@ -107,6 +115,7 @@ class search_algorithm(object):
 			# print('addding up node', up_node.prev_node)			
 			curr_neighbor_nodes.append(up_node)
 		else:
+			print "neighbor already visited"
 			if self.dead[(self.current_node.x, self.current_node.y-1)].prev_node.g > self.current_node.g:
 				self.dead[(self.current_node.x, self.current_node.y-1)].prev_node = self.current_node
 
@@ -116,6 +125,7 @@ class search_algorithm(object):
 			down_node.prev_node = self.current_node
 			curr_neighbor_nodes.append(down_node)
 		else:
+			print "neighbor already visited"
 			if self.dead[(self.current_node.x, self.current_node.y+1)].prev_node.g > self.current_node.g:
 				self.dead[(self.current_node.x, self.current_node.y+1)].prev_node = self.current_node
 
@@ -131,7 +141,7 @@ class search_algorithm(object):
 		self.current_node.neighbors = curr_neighbor_nodes
 
 
-	def visualize(self, viz_grid):
+	def visualize(self, viz_grid, close=False):
 		print("updating viz")
 
 		for key in self.came_from:
@@ -139,7 +149,6 @@ class search_algorithm(object):
 				viz_grid[key[1], key[0]] = 10
 		self.frame_count += 1
 		print(self.frame_count)
-		print viz_grid[300,1300]
 		A = np.random.random((100,100))
 		plt.clf()
 		#plt.pcolor(viz_grid)
@@ -150,9 +159,7 @@ class search_algorithm(object):
 		#plt.pcolor(A)
 		plt.draw()
 		plt.pause(.01)
-		plt.show(False)
-		if self.destination_reached:
-			plt.close()
+		plt.show(close)
 
 
 	def find_path(self):
@@ -171,28 +178,31 @@ class search_algorithm(object):
 			# Append each neighbor
 
 			for neighbor in self.current_node.neighbors:
-				self.todo.append(neighbor)	
+				if neighbor.value == -1:
+					self.todo.append(neighbor)	
+				else:
+					print "BAD NEIGHBOR"
+					print neighbor.value
 
+			
 			# Sort todo: smallest total cost fist! 
 			self.todo.sort(key=lambda x: x.cost, reverse=False)
-			#print("TODO ", self.todo)
-			self.dead[(self.current_node.x, self.current_node.y)]= self.current_node
+			self.dead[self.current_node.x, self.current_node.y]= self.current_node
 			#print ("self.DEAD " ,self.dead)
 
 			# Update self.current_node
+
 			self.current_node = self.todo.pop(0)
-			#print self.current_node.x, self.current_node.y
-			viz_grid[self.current_node.y, self.current_node.y] = 10
-			viz_grid[300,1300]= 10
-			viz_counter +=1
-			if viz_counter % 100 == 0:
-				print viz_counter
-			if viz_counter % 10000 == 0:
+			print self.current_node.x, self.current_node.y
+			viz_grid[self.current_node.y, self.current_node.x] = 10
+			viz_counter += 1
+			if viz_counter % 2000 == 0:
 				self.visualize(viz_grid)
 		self.destination_reached = True
 		print("destination reached")
 		print("YAYYYY")
 
+		self.visualize(viz_grid,True)
 	
 class graph_node(object):
 	""" the nodes used to actually do stuff"""
@@ -212,7 +222,7 @@ class graph_node(object):
 
 
 		
-SA = search_algorithm((300,1300),(850,1100))
+SA = search_algorithm((40,130),(60,125))
 SA.find_path()
 print("TODO ", SA.todo)
 
