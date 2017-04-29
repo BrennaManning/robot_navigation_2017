@@ -96,7 +96,7 @@ class search_algorithm(object):
 			# print('addding left node', left_node.prev_node)
 			curr_neighbor_nodes.append(left_node)
 		else:
-			print "neighbor already visited"
+			#print "neighbor already visited"
 			if self.dead[(self.current_node.x-1, self.current_node.y)].prev_node.g > self.current_node.g:
 				self.dead[(self.current_node.x-1, self.current_node.y)].prev_node = self.current_node
 
@@ -107,7 +107,7 @@ class search_algorithm(object):
 
 			curr_neighbor_nodes.append(right_node)
 		else:
-			print "neighbor already visited"
+			#print "neighbor already visited"
 			if self.dead[(self.current_node.x+1, self.current_node.y)].prev_node.g > self.current_node.g:
 				self.dead[(self.current_node.x+1, self.current_node.y)].prev_node = self.current_node
 
@@ -117,7 +117,7 @@ class search_algorithm(object):
 			# print('addding up node', up_node.prev_node)			
 			curr_neighbor_nodes.append(up_node)
 		else:
-			print "neighbor already visited"
+			#print "neighbor already visited"
 			if self.dead[(self.current_node.x, self.current_node.y-1)].prev_node.g > self.current_node.g:
 				self.dead[(self.current_node.x, self.current_node.y-1)].prev_node = self.current_node
 
@@ -127,7 +127,7 @@ class search_algorithm(object):
 			down_node.prev_node = self.current_node
 			curr_neighbor_nodes.append(down_node)
 		else:
-			print "neighbor already visited"
+			#print "neighbor already visited"
 			if self.dead[(self.current_node.x, self.current_node.y+1)].prev_node.g > self.current_node.g:
 				self.dead[(self.current_node.x, self.current_node.y+1)].prev_node = self.current_node
 
@@ -144,14 +144,13 @@ class search_algorithm(object):
 
 
 	def visualize(self, viz_grid, close=False):
-		print("updating viz")
+		#print("updating viz")
 
-		for key in self.came_from:
-				print "key", key
-				viz_grid[key[1], key[0]] = 10
+		#for key in self.came_from:
+				#print "key", key
+				#viz_grid[key[1], key[0]] = 10
 		self.frame_count += 1
-		print(self.frame_count)
-		A = np.random.random((100,100))
+		
 		plt.clf()
 		#plt.pcolor(viz_grid)
 		plt.imshow(viz_grid, interpolation='nearest')
@@ -182,21 +181,21 @@ class search_algorithm(object):
 
 		while self.current_node.x != self.destination.x or self.current_node.y != self.destination.y:	
 
-			print(self.current_node)
-			# print("loop")
-
 			# Get neighbors of curr node
 			self.get_neighbors()
 			# Append each neighbor
 
 			for neighbor in self.current_node.neighbors:
-				if neighbor.value == -1:
+				#print("neighbor value: ", neighbor.value)
+				if node_values[neighbor.y, neighbor.x] == 0:
+				#if viz_grid[neighbor.y, neighbor.x] == 1:
 					self.todo.append(neighbor)	
-				else:
-					print "BAD NEIGHBOR"
-					print neighbor.value
+				
 
 			
+			if (self.current_node.x, self.current_node.y) == (self.todo[0].x, self.todo[0].y):
+				self.current_node = self.todo.pop(0)
+
 			# Sort todo: smallest total cost fist! 
 			self.todo.sort(key=lambda x: x.cost, reverse=False)
 			self.dead[self.current_node.x, self.current_node.y]= self.current_node
@@ -206,21 +205,25 @@ class search_algorithm(object):
 
 			self.current_node = self.todo.pop(0)
 
-			print self.current_node.x, self.current_node.y
+			#print self.current_node.x, self.current_node.y
 			viz_grid[self.current_node.y, self.current_node.x] = 10
 			viz_counter += 1
-			if viz_counter % 2000 == 0:
+			if viz_counter % 500 == 0:
 				self.visualize(viz_grid)
 		self.destination_reached = True
 
+
 		print('backtracking')
 		self.backtrack()
+		for node in self.final:
+			viz_grid[node.y, node.x] = 5
+		
 		print('final path', self.final)
 		self.visualize(viz_grid, True)
 		print("destination reached")
 		print("YAYYYY")
 
-		self.visualize(viz_grid,True)
+		
 	
 class graph_node(object):
 	""" the nodes used to actually do stuff"""
@@ -240,7 +243,7 @@ class graph_node(object):
 
 
 		
-SA = search_algorithm((40,130),(60,125))
+SA = search_algorithm((17,104),(80,80))
 SA.find_path()
 # print("TODO ", SA.todo)
 
