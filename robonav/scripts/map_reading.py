@@ -9,7 +9,6 @@ from nav_msgs.srv import GetMap
 
 class MapReadingNode(object):
     """ A node to read from the map"""
-    print("hello world")
 
     def __init__(self):
         """ Intitialize map reading node. """

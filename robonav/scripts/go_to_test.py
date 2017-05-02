@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# the a* search algorithm used to traverse the occupancy grid
+# the neato drives to given point from given coordinate.
 
 from map_reading import MapReadingNode
 import rospy
@@ -19,8 +19,8 @@ print("completed reading map")
 rospy.init_node('go_to_test')
 class drive_node(object):
     def __init__(self, destination, start, startangle):
+    	""" Initialize node"""
         self.initialize = False
-        # making the nodes
         map_reading = MapReadingNode()    
         self.r = rospy.Rate(5)
         self.publisher = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
@@ -45,6 +45,7 @@ class drive_node(object):
         self.publisher.publish(Twist(linear=Vector3(0.0, 0.0, 0.0), angular=Vector3(0.0, 0.0, 0.0)))
 
     def turn(self):
+    	""" The function to turn towards the destination """
     	print "turning"
         if self.destination[0] == self.current_pos[0]:
             turn = 0
@@ -72,13 +73,13 @@ class drive_node(object):
                 self.angular_twist = Vector3(0, 0, self.turnspeed)
                 self.publish_twist()
                 
-            #print rospy.Time.now() - self.time - rospy.Duration(turn_time)
         self.angular_twist = Vector3(0,0,0)
         print "done turning"
         self.publish_twist()
 
 
     def drive(self):
+    	""" The function to drive forward towards the destination. """
     	print "driving forward"
     	xdiff = self.destination[0] - self.current_pos[0] 
         ydiff = self.destination[1] - self.current_pos[1]

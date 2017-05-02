@@ -1,5 +1,4 @@
-""" An implementation of an occupancy field that you can use to implement
-    your particle filter's laser_update function """
+""" An implementation of an occupancy field, adapted from CompRobo Robot Localization project."""
 
 import rospy
 
@@ -24,20 +23,17 @@ from sklearn.neighbors import NearestNeighbors
 
 class OccupancyGrid(object):
     """ 
+    Occupancy Grid for map.
     """
 
     def __init__(self, map):
-        self.map = map      # save this for later
-
-        # build up a numpy array of the coordinates of each grid cell in the map
+        """ Initialize class. """
+        self.map = map   
         self.occupancy_grid = np.zeros((self.map.info.width,self.map.info.height))
-
-        # while we're at it let's count the number of occupied cells
         total_occupied = 0
         curr = 0
         for i in range(self.map.info.width):
             for j in range(self.map.info.height):
-                # occupancy grids are stored in row major order, if you go through this right, you might be able to use curr
                 ind = i + j*self.map.info.width
                 if self.map.data[ind] > 0:
                     total_occupied += 1
