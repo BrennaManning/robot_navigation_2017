@@ -14,12 +14,7 @@ import random
 map_reading = MapReadingNode()	
 # matrix of values from map
 node_values = map_reading.grid_map.occupancy_grid
-# Matrix copy for visualizations
-viz_grid = copy.deepcopy(node_values)
-# Set new values for colorbar
-viz_grid[viz_grid > 10] = 4
-viz_grid[viz_grid == 0] = 1
-viz_grid[viz_grid < 0] = 0
+
 
 print("completed reading map")
 
@@ -33,17 +28,26 @@ class search_algorithm(object):
 
 		# Before __init__ is complete
 		self.initialized = False
-
+		
 
 		# Initialize the ros node
 		rospy.init_node('a_star')
 
-		# Global variable viz_grid used for map visualizations will be modified in this class
-		global viz_grid
+		# viz_grid used for map visualizations will be modified in this class
+		# Matrix copy for visualizations
+		self.viz_grid = copy.deepcopy(node_values)
+		# Set new values for colorbar
+		self.viz_grid[self.viz_grid > 10] = 10
+		self.viz_grid[self.viz_grid == 0] = 1
+		self.viz_grid[self.viz_grid < 0] = 0
+		
+
+
+
 		# Set coordinates of viz_grid corresponding to start and end positions 
 		# so that they will stand out in the visualization
-		viz_grid[start[1], start[0]] = 3
-		viz_grid[destination[1], destination[0]] = 3
+		self.viz_grid[start[1], start[0]] = 3
+		self.viz_grid[destination[1], destination[0]] = 3
 
 		#Create nodes for the start and destination
 		start_node = graph_node(start[0], start[1])
@@ -67,18 +71,13 @@ class search_algorithm(object):
 	
 		# Initialize for visualization purposes
 		self.viz_update_count = 0 # How many times has the viz_grid been updated
-		self.viz_update_period = 500 # How many viz_grid updates before the visualization is updated?
+		self.viz_update_period = 10 # How many viz_grid updates before the visualization is updated?
 		
 		
 		# Initially, the destination has not been reached yet.
 		self.destination_reached = False
 
 		
-		# If inputs are not valid
-		if self.current_node.value != 0:
-			print("BAD START POINT")
-		if self.destination.value != 0:
-			print("BAD DESTINATION POINT")
 
 		# Initialization complete
 		self.initialized = True
@@ -176,7 +175,7 @@ class search_algorithm(object):
 		close input tells us whether  the plot should continuously update or wait for interaction.
 		"""
 		plt.clf()
-		plt.imshow(viz_grid, interpolation='nearest')
+		plt.imshow(self.viz_grid, interpolation='nearest')
 		plt.title(str(rospy.Time.now()))
 		plt.colorbar()
 		plt.draw()
@@ -222,7 +221,7 @@ class search_algorithm(object):
 			self.current_node = self.todo.pop(0)
 
 			# Color visited nodes in visualization
-			viz_grid[self.current_node.y, self.current_node.x] = 10
+			self.viz_grid[self.current_node.y, self.current_node.x] = 2
 			self.viz_update_count += 1
 			# Update visualization graph
 			if self.viz_update_count % self.viz_update_period == 0:
@@ -236,7 +235,7 @@ class search_algorithm(object):
 		self.backtrack()
 		# Color nodes of final path.
 		for node in self.final:
-			viz_grid[node.y, node.x] = 5
+			self.viz_grid[node.y, node.x] = 5
 		print('final path', self.final)
 		self.visualize(True)
 
@@ -259,5 +258,5 @@ class graph_node(object):
 
 
 		
-SA = search_algorithm((17,104),(80,80))
+SA = search_algorithm((9,50),(40,40))
 SA.find_path()
