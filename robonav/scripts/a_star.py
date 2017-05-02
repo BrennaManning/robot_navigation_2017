@@ -58,6 +58,7 @@ class search_algorithm(object):
 		self.current_node.prev_node = start_node # Initialize the start node's previous node to also be at the start with a 0 g cost.
 		self.start_node = start_node
 		print(self.start_node)
+		self.waypoint_list = [] # the list of waypoints to go to
 
 		# Calculate total cost of the current (starting) node.
 		self.total_cost(self.current_node)
@@ -191,6 +192,43 @@ class search_algorithm(object):
 			print('in backtrack loop')
 			self.final.append(self.current_node.prev_node)
 			self.current_node = self.current_node.prev_node
+
+	def waypoints(self):
+		""" turns the list from backtrack into an actual waypoint """
+		prev_diff_x = 0
+		prev_diff_y = 0
+		counter = 0
+		
+		for node in reversed(self.final):
+			print('node', node)
+			diff_x = node.prev_node.x - node.x
+			diff_y = node.prev_node.y - node.y
+			print('diff x', diff_x, 'diff y', diff_y)
+			print('pdif x', prev_diff_x, 'pdif y', prev_diff_y)
+			if (diff_x == prev_diff_x) and (diff_y == prev_diff_y):
+				prev_diff_x = diff_x
+				prev_diff_y = diff_y
+				counter = 0
+				continue
+			elif counter == 3:
+				prev_diff_x = diff_x
+				prev_diff_y = diff_y
+				self.waypoint_list.append((node.x, node.y))
+				counter = 0
+			elif counter == 0:
+				self.waypoint_list.append((node.x, node.y))
+				prev_diff_x = diff_x
+				prev_diff_y = diff_y
+			else:
+				prev_diff_x = diff_x
+				prev_diff_y = diff_y
+				counter += 1
+
+		self.waypoint_list.append((self.destination.x, self.destination.y))
+		for waypoint in self.waypoint_list:
+			viz_grid[waypoint[1], waypoint[0]] = 8
+
+
 		
 
 	def find_path(self):
@@ -233,11 +271,15 @@ class search_algorithm(object):
 		print("destination reached")
 		print('backtracking')
 		self.backtrack()
+		self.final
 		# Color nodes of final path.
 		for node in self.final:
 			self.viz_grid[node.y, node.x] = 5
 		print('final path', self.final)
+		self.waypoints()
+		print('waypoints', self.waypoint_list)
 		self.visualize(True)
+
 
 		
 	
