@@ -72,7 +72,7 @@ class search_algorithm(object):
 	
 		# Initialize for visualization purposes
 		self.viz_update_count = 0 # How many times has the viz_grid been updated
-		self.viz_update_period = 10 # How many viz_grid updates before the visualization is updated?
+		self.viz_update_period = 30 # How many viz_grid updates before the visualization is updated?
 		
 		
 		# Initially, the destination has not been reached yet.
@@ -216,7 +216,7 @@ class search_algorithm(object):
 				self.waypoint_list.append((node.x, node.y))
 				counter = 0
 			elif counter == 0:
-				self.waypoint_list.append((node.x, node.y))
+				self.waypoint_list.append((node.prev_node.x, node.prev_node.y))
 				prev_diff_x = diff_x
 				prev_diff_y = diff_y
 			else:
@@ -226,7 +226,7 @@ class search_algorithm(object):
 
 		self.waypoint_list.append((self.destination.x, self.destination.y))
 		for waypoint in self.waypoint_list:
-			viz_grid[waypoint[1], waypoint[0]] = 8
+			self.viz_grid[waypoint[1], waypoint[0]] = 8
 
 
 		
