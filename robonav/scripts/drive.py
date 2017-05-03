@@ -16,9 +16,9 @@ node_values = map_reading.grid_map.occupancy_grid
 
 print("completed reading map")
 
-rospy.init_node('go_to_test')
+rospy.init_node('go_to')
 class drive_node(object):
-    def __init__(self, destination, start, startangle):
+    def __init__(self, start, dest, startangle):
     	""" Initialize node"""
         self.initialize = False
         map_reading = MapReadingNode()    
@@ -111,7 +111,7 @@ class drive_node(object):
                 self.stop()
         self.stop()
 
-rospy.init_node('go_to_test')
+rospy.init_node('go_to')
 time = rospy.Time.now()
-node = drive_node((1,1),(0,0), 0)
+node = drive_node((0,0),(1,1), 0)
 node.run()
