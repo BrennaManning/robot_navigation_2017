@@ -75,6 +75,7 @@ class search_algorithm(object):
 		self.viz_update_period = 100 # How many viz_grid updates before the visualization is updated?
 		
 		
+		
 		# Initially, the destination has not been reached yet.
 		self.destination_reached = False
 
@@ -300,5 +301,5 @@ class graph_node(object):
 
 
 		
-SA = search_algorithm((9,50),(40,40))
+SA = search_algorithm((18,100),(80,80))
 SA.find_path()
