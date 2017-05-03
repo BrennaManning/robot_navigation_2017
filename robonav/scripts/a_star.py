@@ -72,7 +72,7 @@ class search_algorithm(object):
 	
 		# Initialize for visualization purposes
 		self.viz_update_count = 0 # How many times has the viz_grid been updated
-		self.viz_update_period = 30 # How many viz_grid updates before the visualization is updated?
+		self.viz_update_period = 100 # How many viz_grid updates before the visualization is updated?
 		
 		
 		# Initially, the destination has not been reached yet.
