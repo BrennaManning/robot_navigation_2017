@@ -24,6 +24,7 @@ class MapReadingNode(object):
             else:
                 print "no map :("
             self.grid_map = OccupancyGrid(map)
+            self.info = map.info
             
         except rospy.ServiceException, e:
             print "Service call failed: %s"%e

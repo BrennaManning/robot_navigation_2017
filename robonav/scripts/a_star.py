@@ -10,14 +10,6 @@ import numpy as np
 import copy
 import random
 
-# Read Map
-map_reading = MapReadingNode()	
-# matrix of values from map
-node_values = map_reading.grid_map.occupancy_grid
-
-
-print("completed reading map")
-print "ABOUT TO A*"
 class search_algorithm(object):
 	def __init__(self, destination, start):
 		""" 
@@ -25,17 +17,20 @@ class search_algorithm(object):
 		tuple destination: position to navigate to
 		tuple start: estimated starting position
 		"""
-		print "a_staaarr"
 		# Before __init__ is complete
 		self.initialized = False
 		
 
 		# Initialize the ros node
-		rospy.init_node('a_star')
+		#rospy.init_node('a_star')
 
 		# viz_grid used for map visualizations will be modified in this class
 		# Matrix copy for visualizations
-		self.viz_grid = copy.deepcopy(node_values)
+		self.map_reading = MapReadingNode()	
+		# matrix of values from map
+		self.node_values = self.map_reading.grid_map.occupancy_grid
+
+		self.viz_grid = copy.deepcopy(self.node_values)
 		# Set new values for colorbar
 		self.viz_grid[self.viz_grid > 10] = 10
 		self.viz_grid[self.viz_grid == 0] = 1
@@ -50,10 +45,10 @@ class search_algorithm(object):
 		self.viz_grid[destination[1], destination[0]] = 3
 
 		#Create nodes for the start and destination
-		start_node = graph_node(start[0], start[1])
+		start_node = graph_node(start[0], start[1], self.node_values)
 		start_node.g = 0
 		self.start_node = start_node
-		self.destination = graph_node(destination[0], destination[1])
+		self.destination = graph_node(destination[0], destination[1], self.node_values)
 		self.current_node = start_node # Set current node to start_node
 		self.current_node.prev_node = start_node # Initialize the start node's previous node to also be at the start with a 0 g cost.
 		self.start_node = start_node
@@ -72,7 +67,7 @@ class search_algorithm(object):
 	
 		# Initialize for visualization purposes
 		self.viz_update_count = 0 # How many times has the viz_grid been updated
-		self.viz_update_period = 100 # How many viz_grid updates before the visualization is updated?
+		self.viz_update_period = 800 # How many viz_grid updates before the visualization is updated?
 		
 		
 		
@@ -118,7 +113,7 @@ class search_algorithm(object):
 		# If the left neighbor has not been visited yet
 		# create a node, set the current node as the previous node, and add it to list of neighbors
 		if (self.current_node.x-1, self.current_node.y) not in self.dead:
-			left_node = graph_node(self.current_node.x-1, self.current_node.y)
+			left_node = graph_node(self.current_node.x-1, self.current_node.y, self.node_values)
 			left_node.prev_node = self.current_node
 			curr_neighbor_nodes.append(left_node)
 		# If the left neighbor has already been visited
@@ -130,7 +125,7 @@ class search_algorithm(object):
 		# If the right neighbor has not been visited yet
 		# create a node, set the current node as the previous node, and add it to list of neighbors
 		if (self.current_node.x+1, self.current_node.y) not in self.dead:
-			right_node = graph_node(self.current_node.x+1, self.current_node.y)
+			right_node = graph_node(self.current_node.x+1, self.current_node.y, self.node_values)
 			right_node.prev_node = self.current_node
 			curr_neighbor_nodes.append(right_node)
 		# If the right neighbor has already been visited
@@ -142,7 +137,7 @@ class search_algorithm(object):
 		# If the above neighbor has not been visited yet
 		# create a node, set the current node as the previous node, and add it to list of neighbors
 		if (self.current_node.x, self.current_node.y-1) not in self.dead:
-			up_node = graph_node(self.current_node.x, self.current_node.y-1)
+			up_node = graph_node(self.current_node.x, self.current_node.y-1, self.node_values)
 			up_node.prev_node = self.current_node
 			curr_neighbor_nodes.append(up_node)
 		# If the above neighbor has already been visited
@@ -154,7 +149,7 @@ class search_algorithm(object):
 		# If the below neighbor has not been visited yet
 		# create a node, set the current node as the previous node, and add it to list of neighbors
 		if (self.current_node.x, self.current_node.y+1) not in self.dead:
-			down_node = graph_node(self.current_node.x, self.current_node.y+1)
+			down_node = graph_node(self.current_node.x, self.current_node.y+1, self.node_values)
 			down_node.prev_node = self.current_node
 			curr_neighbor_nodes.append(down_node)
 		# If the below neighbor has already been visited
@@ -244,7 +239,7 @@ class search_algorithm(object):
 			# Append each neighbor
 			for neighbor in self.current_node.neighbors:
 				# If neighbor is available space add to todo list of nodes to visit
-				if node_values[neighbor.y, neighbor.x] == 0:
+				if self.node_values[neighbor.y, neighbor.x] == 0:
 					self.todo.append(neighbor)	
 			
 			# Skip doubles on todo list (for speed)
@@ -280,17 +275,20 @@ class search_algorithm(object):
 		self.waypoints()
 		print('waypoints', self.waypoint_list)
 		self.visualize(True)
+
+
 		
 	
 class graph_node(object):
 	""" the nodes used to actually do stuff"""
-	def __init__(self, x, y):
+	def __init__(self, x, y, node_values):
 		self.x = x
 		self.y = y
 		self.g = sys.maxint
 		self.h = 0 
 		self.cost = 0
-		self.value = node_values[x,y]
+		self.node_values = node_values
+		self.value = self.node_values[x,y]
 		self.prev_node = None
 		self.neighbors = []
 
@@ -298,9 +296,15 @@ class graph_node(object):
 		return "node at %d,%d" % (self.x, self.y)
 
 
-		
-SA = search_algorithm((18,100),(80,80))
-#SA.find_path()
-
 if __name__ == '__main__':
-	pass
+	# Read Map
+	map_reading = MapReadingNode()	
+	# matrix of values from map
+	node_values = map_reading.grid_map.occupancy_grid
+
+
+	print("completed reading map")
+	print "ABOUT TO A*"
+			
+	SA = search_algorithm((18,100),(80,80))
+	#SA.find_path()
