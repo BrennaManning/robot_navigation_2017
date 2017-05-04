@@ -53,8 +53,9 @@ class drive_node(object):
         else:
             xdiff = self.destination[0] - self.current_pos[0] 
             ydiff = self.destination[1] - self.current_pos[1]
-            angle = np.arctan(xdiff/ydiff) # In radians
-            if xdiff > 0:
+            target_angle = np.arctan(xdiff/ydiff) # In radians
+            angle = target_angle - startangle
+            if angle > 0:
             	print "destination is to the right"
             	self.turnspeed = -1 * abs(self.turnspeed)
             else:
