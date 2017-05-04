@@ -3,8 +3,8 @@
 import rospy
 from map_reading import MapReadingNode
 from a_star import searchalgorithm
-from a_star import graph_node
-from drive import drive_node
+# from a_star import graph_node
+# from drive import drive_node
 from std_msgs.msg import Header, String
 from sensor_msgs.msg import LaserScan, PointCloud
 from geometry_msgs.msg import PoseStamped, PoseWithCovarianceStamped, PoseArray, Pose, Point, Quaternion
@@ -14,8 +14,8 @@ from tf.transformations import euler_from_quaternion, rotation_matrix, quaternio
 import time
 
 
-map_reading = MapReadingNode()	
-nav_map = map_reading.grid_map
+#map_reading = MapReadingNode()	
+#nav_map = map_reading.grid_map
 
 class neato_navigation(object):
 	def __init__(self): # , start, dest, startangleamcl_pose 
@@ -44,12 +44,13 @@ class neato_navigation(object):
 	def update_pos(self, msg):
 		self.pos = msg.pose.pose.position
 		self.angle = msg.pose.pose.orientation
-		get_position_meters()
+		print("help I'm inside a computer ")
+		#get_position_meters()
 		# position is x,y,z
 
-	def get_position_meters(self)
-		self.xm = self.pos.x * nav_map.info.resolution + nav_map.info.origin .x
-		self.ym = self.pos.y * nav_map.info.resolution + nav_map.info.origin .y
+	def get_position_meters(self):
+		#self.xm = self.pos.x * nav_map.info.resolution + nav_map.info.origin .x
+		#self.ym = self.pos.y * nav_map.info.resolution + nav_map.info.origin .y
 
 		print(self.xm, self.ym)
 
@@ -60,6 +61,9 @@ class neato_navigation(object):
 		# self.drive_node(location, expected, )
 		# self.drive_node.run()
 
+	def runner(self):
+		while not rospy.is_shutdown():
+			print("POSITION ", self.pos)
 
 
 	# def run(self):
@@ -74,3 +78,4 @@ class neato_navigation(object):
 
 rospy.init_node('nav')
 N = neato_navigation() # (9,50),(40,40)
+N.runner()

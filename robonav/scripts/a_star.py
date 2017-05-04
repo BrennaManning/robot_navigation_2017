@@ -17,7 +17,7 @@ node_values = map_reading.grid_map.occupancy_grid
 
 
 print("completed reading map")
-
+print "ABOUT TO A*"
 class search_algorithm(object):
 	def __init__(self, destination, start):
 		""" 
@@ -25,7 +25,7 @@ class search_algorithm(object):
 		tuple destination: position to navigate to
 		tuple start: estimated starting position
 		"""
-
+		print "a_staaarr"
 		# Before __init__ is complete
 		self.initialized = False
 		
@@ -280,8 +280,6 @@ class search_algorithm(object):
 		self.waypoints()
 		print('waypoints', self.waypoint_list)
 		self.visualize(True)
-
-
 		
 	
 class graph_node(object):
@@ -302,4 +300,7 @@ class graph_node(object):
 
 		
 SA = search_algorithm((18,100),(80,80))
-SA.find_path()
+#SA.find_path()
+
+if __name__ == '__main__':
+	pass
