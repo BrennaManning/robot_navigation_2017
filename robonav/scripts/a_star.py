@@ -234,7 +234,7 @@ class search_algorithm(object):
 
 	def find_path(self):
 		""" Function to traverse graph to destination using A* algorithm."""
-		
+		print "FINDING PATH"
 		self.viz_update_count = 0
 		
 		# Until destination is reached
