@@ -24,7 +24,7 @@ import random
 
 
 class neato_navigation(object):
-	def __init__(self, start=(18, 100), dest=(80,80)): # , start, dest, startangleamcl_pose 
+	def __init__(self, start=(9, 50), dest=(40,40)): # , start, dest, startangleamcl_pose 
 		self.map_reading = MapReadingNode()	
 		self.nav_map = self.map_reading.grid_map
 		self.nav_map_info = self.map_reading.info
@@ -37,8 +37,13 @@ class neato_navigation(object):
 		self.waypoints = self.a_star.waypoint_list
 		self.x = 0
 		self.y = 0
+
+		self.vizx = 0
+		self.vizy = 0
+
 		self.angle = 0
 		self.updates = 0
+		self.viz_count = 0
 
 
 		rospy.Subscriber("/amcl_pose", PoseWithCovarianceStamped, self.update_pos)
@@ -51,15 +56,32 @@ class neato_navigation(object):
 
 
 
+	def visualize(self, close=False):
+		"""
+		Visualises neato locatoin
+		"""
+		viz_grid = self.a_star.viz_grid
+		plt.clf()
+		plt.imshow(viz_grid, interpolation='nearest')
+		plt.title(str(rospy.Time.now()))
+		plt.colorbar()
+		plt.draw()
+		plt.pause(.01)
+		plt.show(close)
+
 	def update_pos(self, msg):
 		self.x = msg.pose.pose.position.x
 		self.y = msg.pose.pose.position.y
 		self.angle = msg.pose.pose.orientation
 		self.get_position_meters()
-		self.a_star.viz_grid[self.y, self.x] = 8
-
-		self.a_star.viz_grid[120, 120] = 8
-		self.a_star.visualize()
+		self.vizx = (self.xm/self.nav_map_info.resolution)/self.nav_map_info.resolution
+		self.vizy = (self.ym/self.nav_map_info.resolution)/self.nav_map_info.resolution
+		self.a_star.viz_grid[int(self.vizx), int(self.vizy)] = 9
+		print("POSITION :", self.xm, "meters ",self.ym, "meters" )
+		print("UPDATING VIZ POS TO :", int(self.vizy), int(self.vizx))
+		
+		self.visualize()
+		return
 
 	def get_position_meters(self):
 		
@@ -76,7 +98,7 @@ class neato_navigation(object):
 
 	def runner(self):
 		while not rospy.is_shutdown():
-			print("POSITION ", self.xm, self.ym)
+			#print("POSITION ", self.xm, self.ym)
 			pass
 	# def run(self):
 	# 	for i in len(self.waypoints-1):

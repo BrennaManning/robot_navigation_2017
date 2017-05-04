@@ -178,7 +178,7 @@ class search_algorithm(object):
 		plt.draw()
 		plt.pause(.01)
 		plt.show(close)
-
+		return
 	def backtrack(self):
 		"""
 		Once destination is reached, this function creates a list of the optimal path to reach that point.
