@@ -35,13 +35,14 @@ class neato_navigation(object):
 		self.a_star = search_algorithm(start,dest)
 		self.a_star.find_path()
 		self.waypoints = self.a_star.waypoint_list
+		self.waypoints_meters = []
 		self.x = 0
 		self.y = 0
 
 		self.vizx = 0
 		self.vizy = 0
 
-		self.angle = 0
+		self.quaternion = []
 		self.updates = 0
 		self.viz_count = 0
 
@@ -53,6 +54,8 @@ class neato_navigation(object):
 
 		self.r = rospy.Rate(5)
 		print('this is doing something')
+
+		self.tf = TransformListener
 
 
 
@@ -72,23 +75,45 @@ class neato_navigation(object):
 	def update_pos(self, msg):
 		self.x = msg.pose.pose.position.x
 		self.y = msg.pose.pose.position.y
-		self.angle = msg.pose.pose.orientation
+		self.quaternion = [msg.pose.pose.orientation.x, msg.pose.pose.orientation.y,
+						msg.pose.pose.orientation.z, msg.pose.pose.orientation.w]
 		self.get_position_meters()
-		self.vizx = (self.xm/self.nav_map_info.resolution)/self.nav_map_info.resolution
-		self.vizy = (self.ym/self.nav_map_info.resolution)/self.nav_map_info.resolution
+		self.vizx = (self.xm/self.nav_map_info.resolution)
+		self.vizy = (self.ym/self.nav_map_info.resolution)
 		self.a_star.viz_grid[int(self.vizx), int(self.vizy)] = 9
-		print("POSITION :", self.xm, "meters ",self.ym, "meters" )
-		print("UPDATING VIZ POS TO :", int(self.vizy), int(self.vizx))
-		
-		self.visualize()
+		# print("POSITION :", self.xm, "meters ",self.ym, "meters" )
+		# print("UPDATING VIZ POS TO :", int(self.vizy), int(self.vizx))
+		self.angle = euler_from_quaternion(self.quaternion)[2]
+		print('angle', self.angle)
+		#self.visualize()
+
+
+
+		# print('msg frame', msg.header.frame_id)
+		# t = self.tf.getLatestCommonTime(msg.header.frame_id, "map")
+		# position, quaternion = self.tf.lookupTransform(msg.header.frame_id, "map", t)
+		# print('transform stuff')
+		# print position, quaternion
+
+
 		return
+
+
 
 	def get_position_meters(self):
 		
-		self.xm = self.x * self.nav_map_info.resolution - self.nav_map_info.origin.position.x * self.nav_map_info.resolution
-		self.ym = self.y * self.nav_map_info.resolution - self.nav_map_info.origin.position.y * self.nav_map_info.resolution
+		self.xm = self.x - self.nav_map_info.origin.position.x 
+		self.ym = self.y - self.nav_map_info.origin.position.y 
+		print('positions', self.xm, self.ym)
 		
-
+	def get_waypoints_meters(self):
+		for waypoint in self.waypoints:
+			# print('non metered waypoint', waypoint)
+			waypoint_meter_x = waypoint[1] * self.nav_map_info.resolution - self.nav_map_info.origin.position.x * self.nav_map_info.resolution
+			waypoint_meter_y = waypoint[0] * self.nav_map_info.resolution - self.nav_map_info.origin.position.y * self.nav_map_info.resolution
+			waypoint_meter = (waypoint_meter_x, waypoint_meter_y)
+			self.waypoints_meters.append(waypoint_meter)
+			print('metered waypoint', waypoint_meter)
 
 	def check_location(self, expected):
 		pass
@@ -97,8 +122,13 @@ class neato_navigation(object):
 		# self.drive_node.run()
 
 	def runner(self):
+		self.get_waypoints_meters()
+		r = rospy.Rate(0.5)
 		while not rospy.is_shutdown():
 			#print("POSITION ", self.xm, self.ym)
+			self.visualize()
+			r.sleep()
+
 			pass
 	# def run(self):
 	# 	for i in len(self.waypoints-1):
