@@ -28,16 +28,12 @@
 					<ul>
 						<li><a href="#one" class="active">About</a></li>
 						<li><a href="#two">Documentation and Project Stories</a></li>
-						<li><a href="#three">A Few Accomplishments</a></li>
+						<li><a href="#final">Final</a></li>
 					</ul>
 				</nav>
 				<footer>
 					<ul class="icons">
-						<li><a href="#" class="icon fa-twitter"><span class="label">Twitter</span></a></li>
-						<li><a href="#" class="icon fa-facebook"><span class="label">Facebook</span></a></li>
-						<li><a href="#" class="icon fa-instagram"><span class="label">Instagram</span></a></li>
-						<li><a href="#" class="icon fa-github"><span class="label">Github</span></a></li>
-						<li><a href="#" class="icon fa-envelope"><span class="label">Email</span></a></li>
+					
 					</ul>
 				</footer>
 			</section>
@@ -145,7 +141,42 @@ We also had an opportunity this past week to present our work so far to the othe
 								<h3>Final</h3>
 								<h5>May 5, 2017</h5>
 
+								<h4> What's the big idea? </h4>
+								<p>The focus of this project was on path planning algorithms. Given a map of a space and a goal destination within that space, the neato robot uses the A* graph search algorithm to efficiently plan an optimal path. Then, from this path, a series of waypoints are generated as intermediate goal locations.  Using the built in localizer, it is determined what the current location is. Then the neato can drive to each waypoint in order to reach the final destination!</p>
+
+								<p>Path planning and navigation are critical elements of robotics. Any robot that drives or moves around could benefit from fast and accurate path planning. What we have created would be most useful for robots in a familiar environment, such as a home or a place where robots do work. Because it is a known location that the robot is working in, it makes sense that a map of that location would exist. However, it does not need to be familiar. All we need is a map of the space! This could be useful for most buildings where floor plans are known.</p>
+
+								<h4>System Architecture</h4>
+								<p>Our code was divided across 4 main classes. The first class was the a_star class, and this was in charge of the a_star algorithm, as its name suggests. The a_star class took in a start point and an endpoint, as tuples of pixels. We also used a map_reader function to create a map and the Occupancy Grid function from the robot localization project to turn the values on the map into understandable numpy arrays of values that contained information about the contents of each pixel of the map. We used this occupancy grid to create a bunch of nodes using our Graph Node class. That was all in the initial setup of the a_star algorithm. </p>
+
+								<p>The typical structure of the algorithm is as follows:</p>
+								<ol>
+									<li>Start with the starting node, and evaluate its manhattan distance to the destination.</li>
+									<li>Generate neighbors on all sides of the node, and evaluate the cost to get to the node plus the manhattan distance from each neighbor to the destination.</li>
+									<li>From the list of neighbors, pop the node that has the lowest total cost. </li>
+									<li>Find all of the neighbors of the new node and add them to the list of nodes to be tested</li>
+									<li>Repeat step 3 until you reach a node on the destination, in which case you trace back your path.</li>
+								</ol>
+								<p>A great benefit of using A* is that you can avoid searching some nodes that can’t possibly be faster than others Because you always are looking at the node with the smallest total cost, you can reach your destination without ever looking at nodes with huge costs, or costs higher than the heuristic, because there is no way that they could be faster. </p>
+
+								<p>The find_neighbors function generates the neighbors of the current node. It does this by checking to see if the nodes on all sides of the current node are already in the list of nodes to look at. If they are, it compares their current cost with the hypothetical cost of accessing this node from the current node. If the hypothetical cost is faster, this cost becomes the cost of the node and the new previous node of the neighbor becomes the current node. </p>
+
+								<p>The other important functions in A* that help us in the future are the backtrack function and the make path function. The backtrack function starts with the destination node and iterates through previous nodes to find the path that the algorithm took to get to the destination. It returns this information as a list. The make path function takes the list from the backtrack function and looks at the coordinates of the node. It compares the difference in coordinates of the node and the node it came from and tries to find patterns. If the difference between two nodes is that same as that of the previous nodes then it continues down the list of nodes until it reaches a different difference. At that point it creates a marker at that point, telling the robot that it’s a straight shot from it’s current location to that point on the map. It then repeats that, creating a list of markers for the robot to use for driving.</p>
+
+								<p>The nav.py file contains the bread and butter of our full system. This is when we combine the drive and A* together to create a program that can plan and execute a path to a given target. In order to give our robot a position, we use the built-in ROS AMCL (Adaptive Monte Carlo Localization) particle filter package. An interesting challenge we ran into was trying to keep all of the origins of the different maps identical, as the AMCL returned coordinates in meters and our A* and visualizer used pixels. The solution involved taking the resolution from the map.yaml file and multiplying that by the difference of the origins of the two maps. </p>
+
+								<h4>Demonstration of A* algorithm</h4>
+								<ul>
+									<li>exploring graph nodes</li>
+									<li>planning path</li>
+									<li>generating waypoints</li>
+								</ul>
 								<img src="images/screencap.gif" width = 70%>
+
+								<img src="images/screencap2.gif" width = 70%>
+
+								<h4>Video of neato driving to destination after planning path.</h4>
+								<iframe width="560" height="315" src="https://www.youtube.com/embed/ZMQUwUZ5NB0" frameborder="0" allowfullscreen></iframe>
 								<p></p>
 							</div>
 						</section>
