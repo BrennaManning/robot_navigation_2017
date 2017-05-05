@@ -1,6 +1,7 @@
 # CompRobo17 Final Project
 #### Paul Krusell & Brenna Manning
 #### May 5 2017
+##### [Check out our website to learn more!](https://brennamanning.github.io/robot_navigation_2017/)
 
 ## What's the big idea?
 
