@@ -21,9 +21,6 @@ class search_algorithm(object):
 		self.initialized = False
 		
 
-		# Initialize the ros node
-		#rospy.init_node('a_star')
-
 		# viz_grid used for map visualizations will be modified in this class
 		# Matrix copy for visualizations
 		self.map_reading = MapReadingNode()	
@@ -297,6 +294,10 @@ class graph_node(object):
 
 
 if __name__ == '__main__':
+
+	# Initialize the ros node
+	rospy.init_node('a_star')
+
 	# Read Map
 	map_reading = MapReadingNode()	
 	# matrix of values from map
