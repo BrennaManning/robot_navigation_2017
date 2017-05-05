@@ -64,7 +64,7 @@ class search_algorithm(object):
 	
 		# Initialize for visualization purposes
 		self.viz_update_count = 0 # How many times has the viz_grid been updated
-		self.viz_update_period = 800 # How many viz_grid updates before the visualization is updated?
+		self.viz_update_period = 80 # How many viz_grid updates before the visualization is updated?
 		
 		
 		
@@ -170,7 +170,7 @@ class search_algorithm(object):
 		"""
 		plt.clf()
 		plt.imshow(self.viz_grid, interpolation='nearest')
-		plt.title(str(rospy.Time.now()))
+		plt.title("A* Graph Search")
 		plt.colorbar()
 		plt.draw()
 		plt.pause(.01)
@@ -252,7 +252,7 @@ class search_algorithm(object):
 			self.current_node = self.todo.pop(0)
 
 			# Color visited nodes in visualization
-			self.viz_grid[self.current_node.y, self.current_node.x] = 2
+			self.viz_grid[self.current_node.y, self.current_node.x] = 3
 			self.viz_update_count += 1
 			# Update visualization graph
 			if self.viz_update_count % self.viz_update_period == 0:
@@ -308,5 +308,5 @@ if __name__ == '__main__':
 	print("completed reading map")
 	print "ABOUT TO A*"
 			
-	SA = search_algorithm((18,50),(40,40))
+	SA = search_algorithm((25,137),(80,80))
 	SA.find_path()
