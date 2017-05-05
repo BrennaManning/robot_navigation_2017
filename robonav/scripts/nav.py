@@ -18,24 +18,26 @@ import sys
 import matplotlib.pyplot as plt
 import numpy as np
 import copy
+from drive import drive_node
 import random
 
 
 
 
 class neato_navigation(object):
-	def __init__(self, start=(9, 50), dest=(40,40)): # , start, dest, startangleamcl_pose 
+	def __init__(self, dest=(40,40)): # , start, dest, startangleamcl_pose 
+		self.initialized = False
 		self.map_reading = MapReadingNode()	
 		self.nav_map = self.map_reading.grid_map
 		self.nav_map_info = self.map_reading.info
 		print self.nav_map_info
-		self.start = start
+		# self.start = start
 		self.dest = dest
 		self.node_values = self.nav_map.occupancy_grid
-		self.a_star = search_algorithm(start,dest)
-		self.a_star.find_path()
-		self.waypoints = self.a_star.waypoint_list
+		self.a_star = None
+		self.waypoints = []
 		self.waypoints_meters = []
+
 		self.x = 0
 		self.y = 0
 
@@ -43,21 +45,37 @@ class neato_navigation(object):
 		self.vizy = 0
 
 		self.quaternion = []
+		self.angle = 0
+
 		self.updates = 0
 		self.viz_count = 0
 
+		self.xp = 0
+		self.yp = 0
 
-		rospy.Subscriber("/amcl_pose", PoseWithCovarianceStamped, self.update_pos)
+		self.path_found = False
 
 		self.xm = 0 # x position in  meters
 		self.ym = 0 # y position in meters
 
-		self.r = rospy.Rate(5)
+		rospy.Subscriber("/amcl_pose", PoseWithCovarianceStamped, self.update_pos)
+
+		rospy.Subscriber("initialpose", PoseWithCovarianceStamped, self.update_initial)
+
+		self.r = rospy.Rate(15)
 		print('this is doing something')
 
 		self.tf = TransformListener
 
+	def update_initial(self, msg):
+		self.x = msg.pose.pose.position.x
+		self.y = msg.pose.pose.position.y
 
+		self.quaternion = [msg.pose.pose.orientation.x, msg.pose.pose.orientation.y,
+						msg.pose.pose.orientation.z, msg.pose.pose.orientation.w]
+		self.angle = euler_from_quaternion(self.quaternion)
+		print('updating the initial')
+		self.initialized = True
 
 	def visualize(self, close=False):
 		"""
@@ -78,14 +96,27 @@ class neato_navigation(object):
 		self.quaternion = [msg.pose.pose.orientation.x, msg.pose.pose.orientation.y,
 						msg.pose.pose.orientation.z, msg.pose.pose.orientation.w]
 		self.get_position_meters()
+		self.angle = euler_from_quaternion(self.quaternion)[2]
+		print('angle', self.angle)
+		# if self.a_star:
+		self.update_viz()
+
+
+	def update_viz(self):
+		if not (self.initialized):
+
+			return
+		if not (self.a_star):
+			return
+		# print('visualizing')
 		self.vizx = (self.xm/self.nav_map_info.resolution)
 		self.vizy = (self.ym/self.nav_map_info.resolution)
 		self.a_star.viz_grid[int(self.vizx), int(self.vizy)] = 9
+
 		# print("POSITION :", self.xm, "meters ",self.ym, "meters" )
 		# print("UPDATING VIZ POS TO :", int(self.vizy), int(self.vizx))
-		self.angle = euler_from_quaternion(self.quaternion)[2]
-		print('angle', self.angle)
-		#self.visualize()
+			#self.visualize()
+		# print('initializing', self.xm, self.ym)
 
 
 
@@ -101,13 +132,26 @@ class neato_navigation(object):
 
 
 	def get_position_meters(self):
-		
-		self.xm = self.x - self.nav_map_info.origin.position.x 
+		if not (self.initialized):
+
+			return
+		self.xm = self.x - self.nav_map_info.origin.position.x # mult by res? 
 		self.ym = self.y - self.nav_map_info.origin.position.y 
 		print('positions', self.xm, self.ym)
+
+	def get_pixels_meters(self):
+		self.xp = int((-self.nav_map_info.origin.position.x + self.x) / self.nav_map_info.resolution)
+		self.yp = int((-self.nav_map_info.origin.position.y + self.y) / self.nav_map_info.resolution)
+
+	def get_pixels_meters1(self, x, y):
+		xp = x / self.nav_map_info.resolution
+		yp = y / self.nav_map_info.resolution
+		return xp, yp
 		
 	def get_waypoints_meters(self):
-		for waypoint in self.waypoints:
+		if not (self.a_star):
+			return
+		for waypoint in self.a_star.waypoint_list:
 			# print('non metered waypoint', waypoint)
 			waypoint_meter_x = waypoint[1] * self.nav_map_info.resolution - self.nav_map_info.origin.position.x * self.nav_map_info.resolution
 			waypoint_meter_y = waypoint[0] * self.nav_map_info.resolution - self.nav_map_info.origin.position.y * self.nav_map_info.resolution
@@ -121,15 +165,60 @@ class neato_navigation(object):
 		# self.drive_node(location, expected, )
 		# self.drive_node.run()
 
-	def runner(self):
-		self.get_waypoints_meters()
-		r = rospy.Rate(0.5)
-		while not rospy.is_shutdown():
-			#print("POSITION ", self.xm, self.ym)
-			self.visualize()
-			r.sleep()
+	def driver(self, destination):
+		"""drives to a destination"""
+		if not (self.initialized):
+			# print('not initialized yet')
+			return
+		# print('driving')
+		d = drive_node((self.xm, self.ym), destination, self.angle)
+		d.run()
 
-			pass
+	def a_star_creation(self, destination):
+		if not (self.initialized):
+			return
+
+		if not (self.a_star):
+			return
+		print('doing a_star stuff')
+		# x's and y's are flipped for this part
+		self.a_star = search_algorithm((int(self.yp), int(self.xp)), destination)
+		# self.a_star = search_algorithm((19,60), (13,60))
+		self.a_star.find_path()
+		self.path_found = True
+
+
+
+	def runner(self):
+		# r = rospy.Rate(0.5)
+		# while not rospy.is_shutdown():
+		# 	if self.initialized:
+		# 		print('in running loop')
+		# 		print('self.xm, self.ym', self.xm, self.ym)
+		# 		if (self.xm, self.ym) != (None,None):
+		# 			print('in if statement')
+		# 			self.xm = int(self.xm)
+		# 			self.ym = int(self.ym)
+		# 			print('coordinates', self.xm, self.ym)
+		# 			print('types', type(self.xm), type(self.ym), type(self.dest[0]), type(self.dest[1]))
+		# 			self.a_star = search_algorithm((self.xm, self.ym), (self.dest))
+		# 			self.a_star.find_path()
+		# 			print('find path completed')
+		# 			self.get_waypoints_meters()
+
+		# 		print('waypoints in meters', self.waypoints_meters)
+		# 	else:
+		# 		print('stuck', self.node_values[self.vizy, self.vizx])
+		# 		r.sleep()
+		# 	while len(self.waypoints_meters) != 0:
+		# 		print('in second while loop')
+		# 		target = self.waypoints_meters.pop(0)
+		# 		self.driver(target)
+
+		# 		self.visualize()
+		# 		r.sleep()
+		# r.sleep()
+
 	# def run(self):
 	# 	for i in len(self.waypoints-1):
 	# 		if i = 0:
@@ -137,13 +226,30 @@ class neato_navigation(object):
 	#     		self.drive_node.run()
 	#     	else:
 	#     		self.drive_node(waypoints[i-1], waypoints[i])
-	#     		self.drive_node.run()
+	#     	self.drive_node.run()
+		while not (rospy.is_shutdown()):
+			self.get_position_meters()
+			self.get_pixels_meters()
+			dx, dy = self.get_pixels_meters1(self.xm + 1, self.ym + 1)
+			test_dest = (13, 60)
+			self.a_star_creation(test_dest)
+			self.get_waypoints_meters()
+			# print('driving')
+			# print('destination', (self.xm + 1, self.ym + 1))
+			# print('done driving')
+			self.driver((self.xm - 3, self.ym - 3))
+			# if (self.path_found):
+			# 	print('path found')
+			# 	# point = self.waypoints_meters[0]
+			# 	print('waypoint', point)
+			# 	# self.driver(point)
+			# # print('driving to', test_dest, (self.xm, self.ym))
+			# 	# rospy.sleep(1)
+			# 	print('if statemenet in runner')
 
 
 
-
-rospy.init_node('nav')
-
-N = neato_navigation() # (9,50),(40,40)
-print "LINE 81"
-N.runner()
+if __name__ == '__main__':
+	rospy.init_node('nav')
+	N = neato_navigation(dest=(13,60)) # (9,50),(40,40)
+	N.runner()

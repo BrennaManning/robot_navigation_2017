@@ -5,7 +5,7 @@
   <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)"/>
 
   <!-- Localization -->
-  <node name="go_to_test" pkg="robonav" type="go_to_test.py" output="screen">
+  <node name="go_to_test" pkg="robonav" type="drive.py" output="screen">
     <remap from="scan" to="$(arg scan_topic)"/>
   </node>
 </launch>

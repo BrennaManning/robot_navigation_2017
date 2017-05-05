@@ -11,7 +11,7 @@ import copy
 import random
 
 class search_algorithm(object):
-	def __init__(self, destination, start):
+	def __init__(self, start, destination):
 		""" 
 		Initialize Search Algorithm
 		tuple destination: position to navigate to
@@ -300,11 +300,12 @@ if __name__ == '__main__':
 	# Read Map
 	map_reading = MapReadingNode()	
 	# matrix of values from map
+
 	node_values = map_reading.grid_map.occupancy_grid
 
 
 	print("completed reading map")
 	print "ABOUT TO A*"
 			
-	SA = search_algorithm((18,100),(80,80))
-	#SA.find_path()
+	SA = search_algorithm((18,50),(40,40))
+	SA.find_path()

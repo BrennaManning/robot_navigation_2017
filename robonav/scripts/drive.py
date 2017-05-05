@@ -11,20 +11,16 @@ import copy
 import random
 import math
 
-map_reading = MapReadingNode()    
-node_values = map_reading.grid_map.occupancy_grid
 
-print("completed reading map")
-
-rospy.init_node('go_to')
 class drive_node(object):
-    def __init__(self, start, dest, startangle):
-    	""" Initialize node"""
+    def __init__(self, start, destination, startangle):
+        """ Initialize node"""
         self.initialize = False
         map_reading = MapReadingNode()    
         self.r = rospy.Rate(5)
         self.publisher = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
         self.time = rospy.Time.now()
+        self.startangle = 0
         self.current_pos = start
         self.current_angle = 0
         self.destination = destination
@@ -45,22 +41,25 @@ class drive_node(object):
         self.publisher.publish(Twist(linear=Vector3(0.0, 0.0, 0.0), angular=Vector3(0.0, 0.0, 0.0)))
 
     def turn(self):
-    	""" The function to turn towards the destination """
-    	print "turning"
+        """ The function to turn towards the destination """
+        print "turning"
         if self.destination[0] == self.current_pos[0]:
             turn = 0
             print "destination straight ahead"
         else:
             xdiff = self.destination[0] - self.current_pos[0] 
             ydiff = self.destination[1] - self.current_pos[1]
-            target_angle = np.arctan(xdiff/ydiff) # In radians
-            angle = target_angle - startangle
-            if angle > 0:
-            	print "destination is to the right"
-            	self.turnspeed = -1 * abs(self.turnspeed)
+            if ydiff == 0:
+                target_angle = math.pi/2
             else:
-            	print "destination is to the left"
-            	self.turnspeed = abs(self.turnspeed)
+                target_angle = np.arctan(xdiff/ydiff) # In radians
+            angle = target_angle - self.startangle
+            if angle > 0:
+                print "destination is to the right"
+                self.turnspeed = -1 * abs(self.turnspeed)
+            else:
+                print "destination is to the left"
+                self.turnspeed = abs(self.turnspeed)
 
             print "destination " + str(angle) + " radians away"
             turn_time = abs(angle/self.turnspeed) #radians/(radians/second) = seconds
@@ -80,22 +79,22 @@ class drive_node(object):
 
 
     def drive(self):
-    	""" The function to drive forward towards the destination. """
-    	print "driving forward"
-    	xdiff = self.destination[0] - self.current_pos[0] 
+        """ The function to drive forward towards the destination. """
+        # print "driving forward"
+        xdiff = self.destination[0] - self.current_pos[0] 
         ydiff = self.destination[1] - self.current_pos[1]
 
-    	distance = math.sqrt(xdiff**2 + ydiff**2) # meters
-    	print ("distance = ", distance)
+        distance = math.sqrt(xdiff**2 + ydiff**2) # meters
+        print ("distance = ", distance)
 
-    	drive_time = abs(distance/self.drive_speed)
-    	self.time = rospy.Time.now()
-    	while(rospy.Time.now() - self.time < rospy.Duration(drive_time)):
+        drive_time = abs(distance/self.drive_speed)
+        self.time = rospy.Time.now()
+        while(rospy.Time.now() - self.time < rospy.Duration(drive_time)):
                 self.linear_twist = Vector3(self.drive_speed, 0, 0)
                 self.publish_twist()
-                print "driving for " + str(drive_time) + " seconds"
+                # print "driving for " + str(drive_time) + " seconds"
         self.destination_reached = True
-        print "done driving forward"
+        # print "done driving forward"
     def publish_twist(self):
         self.publisher.publish(Twist(linear=self.linear_twist, angular=self.angular_twist))
       
@@ -112,7 +111,14 @@ class drive_node(object):
                 self.stop()
         self.stop()
 
-rospy.init_node('go_to')
-time = rospy.Time.now()
-node = drive_node((0,0),(1,1), 0)
-node.run()
+
+if __name__ == '__main__':
+    
+    map_reading = MapReadingNode()    
+    node_values = map_reading.grid_map.occupancy_grid
+
+    print("completed reading map")
+    rospy.init_node('go_to_test')
+    time = rospy.Time.now()
+    node = drive_node((0,0),(1,1), 0)
+    node.run()
